@@ -9,7 +9,7 @@
 - [### 03手动配置webpack文件](###03手动配置webpack文件)  
 - [04html插件](###04html插件)
 - [05css样式处理(1)](###05css样式处理(1))
-- [06css样式处理(2)](###06css样式处理(2))
+- [06css样式处理(2)坑点多](###06css样式处理(2单独分离css文件/前缀名/压缩css))
 - []()
 - []()
 - []()
@@ -195,5 +195,123 @@ webpack是现代JavaScript应用程冠希的静态模块打包器(module bundler
     // 引入 src/index.js
     import './index.less'
     ```
+- 配置webpack.config.js
+  ```
+              // 处理less文件
+            {
+                test:/\.less/,
+                use: [
+                    {
+                        loader: 'style-loader',
+                        // options:{
 
-  ### 06css样式处理(2)
+                        // }    
+                    },
+                    'css-loader',
+                    'less-loader',
+                ]
+            },
+  ```
+
+  ### 06css样式处理(2单独分离css文件/前缀名/压缩css)
+
+  > 如何将css单独抽离出来？
+
+- 安装 mini-css-extract-plugin 
+    ```
+    yarn add mini-css-extract-plugin -D
+    ```
+- 配置webpack.config.js
+    ```
+    在 webpack.config.js 中增加 plugins 的配置,并且将 'style-loader' 修改为 { loader: MiniCssExtractPlugin.loader}。
+
+    const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+    module.exports = {
+    //other 
+    module: {
+        rules: [
+            {
+                test: /\.css/,
+                use: [{ loader: MiniCssExtractPlugin.loader}, 'css-loader'],
+            },
+            {
+                test: /\.less/,
+                use: [{ loader: MiniCssExtractPlugin.loader }, 'css-loader', 'less-loader'],
+            }
+        ]
+    },
+    plugins: [
+        new MiniCssExtractPlugin({
+            filename: 'css/[name].css'
+        })
+    ]
+}
+    ```
+
+- 安装css浏览器前缀插件
+    ```
+      yarn add postcss-loader autoprefixer -D
+    ```
+
+- 配置webpack.config.js
+    ```
+                {
+                test: /\.css$/,
+                use: [
+                    // 'style-loader', 
+                    { loader: MiniCssExtractPlugin.loader },
+                    'css-loader',
+                    {
+                        loader: 'postcss-loader',
+                        options: {
+                            plugins: [
+                                require('autoprefixer')({
+                                    browsers: ['last 30 versions', "> 2%", "Firefox >= 10", "ie 6-11"]
+                                })
+                            ]
+                        }
+                    }
+                ]
+            },
+            // 处理less文件
+            {
+                test: /\.less/,
+                use: [
+                    // {
+                    //     loader: 'style-loader',
+                    //     // options:{
+
+                    //     // }    
+                    // },
+                    { loader: MiniCssExtractPlugin.loader },
+                    'css-loader',
+                    {
+                        loader: 'postcss-loader',
+                        options: {
+                            plugins: [
+                                require('autoprefixer')({
+                                    browsers: ['last 30 versions', "> 2%", "Firefox >= 10", "ie 6-11"]
+                                })
+                            ]
+                        }
+                    },
+                    'less-loader',
+                ]
+            },
+    ```
+
+- 安装optimize-css-assets-webpack-plugin
+    ```
+    https://www.npmjs.com/package/mini-css-extract-plugin
+
+    yarn add optimize-css-assets-webpack-plugin -D
+    ```
+
+- 配置webpack.config.js
+
+    ```
+     plugins: [
+     // 压缩css
+        new OptimizeCSSAssetsPlugin(),
+     ]
+    ```
