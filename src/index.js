@@ -1,4 +1,5 @@
-// import './style.css';
+import './style.css';
+import './index.less'
 // import './index.html';
 //index.js
 class Animal {
